@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title>掲示板</title>
+</head>
+
+<body>
+
+    <!-- コンテンツ表示画面 -->
+
+    <div>
+        <!-- <div> 名前：<input type="text" id="uname"></div> -->
+        <div>
+            <!-- <textarea id="text" cols="30" rows="10"></textarea> -->
+            <button id="send">全ての発言を取り消します</button>
+        </div>
+        <div>
+            <ul id='output' class='dialogue'></ul>
+        </div>
+    </div>
+    <!--/ コンテンツ表示画面 -->
+
+
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- JQuery -->
+    
+    <!-- kuromoji -->
+    <script src='./data.js'></script>
+    <!--/ kuromoji -->
+
+
+    <!--** 以下Firebase **-->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved }     // TODO: Add SDKs for Firebase products that you want to use
+            from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmRFYJp-TjmjRilxp6v2ln0BnCvUkrMbE",
+            authDomain: "chat-732f9.firebaseapp.com",
+            projectId: "chat-732f9",
+            storageBucket: "chat-732f9.appspot.com",
+            messagingSenderId: "1099187242727",
+            appId: "1:1099187242727:web:70de0784cba251b35d8442"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app); // データベースへの接続
+        const dbRef = ref(db, 'chat'); // どのデータベースを参照するか
+
+        $('#send').on('click', (efg) => {
+            console.log(efg);
+            // shapeHTML();
+            remove(dbRef);
+        });
+
+        // 改行した時に書き込む場合のイベント
+        // $("#text").on("keydown", (e) => {
+        //     if (e.keyCode === 13) {
+        //         shapeHTML();
+        //     }
+        // });
+
+        // let shapeHTML = () => {
+        //     const date = new Date();
+        //     const msg = {
+        //         uname: $('#uname').val(),
+        //         text: $('#text').val(),
+        //         wtime: date
+        //     }
+        //     const newPostRef = push(dbRef); // データをユニークなものにするための記述
+        //     set(newPostRef, msg) // データを保存
+        //     $('#uname').val(null);
+        //     $('#text').val(String.fromCharCode(8));
+        // };
+
+        onChildAdded(dbRef, function (data) {
+            const msg = data.val();
+            const key = data.key;
+            // let h = `<li id='${key}' style='background-color:${msg.colorname}' class='dialogue'>`;
+            let h = `<li id='${key}' class='dialogue'>`;
+            h += msg.uname;
+            // h += msg.wtime;
+            h += ' wrote;<br>「';
+            h += msg.text;
+            h += '」</li>';
+            $("#output").prepend(h); //#outputの先頭に追加
+            $(`#${key}`).css('color', msg.colorname);
+        })
+
+        onChildRemoved(dbRef, function (data) {
+            const key = data.key;
+            // $(`#${key}`).slideUp(200);
+            $(`#${key}`).html('この発言は取り消されました');
+            // location.reload(); // リロードする場合の書き方
+        })
+
+        // $('#output').on('click', function (e) {
+        //     console.log(e);
+        //     const thisID = e.target.id;
+        //     const deletePostRef = $('li').attr('id');
+        //     remove(ref(db, `chat/${thisID}`));
+        // })
+    </script>
+
+
+</body>
+
+</html>

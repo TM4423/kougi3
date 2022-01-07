@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title>Firebase_version9_RealtimeDB(G'sACADEMY初学者用サンプル)</title>
+    <script>
+        const key = 0;
+        const value = '';
+        localStorage.setItem(key, value);    //localStrageのセット方法
+    </script>
+</head>
+
+<body>
+
+    <!-- コンテンツ表示画面 -->
+
+    <div>
+        <div> 名前：<input type="text" id="uname"></div>
+        <div>
+            <textarea id="text" cols="30" rows="10"></textarea>
+            <button id="send">送信</button>
+            <button id="tweet">何か発言</button>
+        </div>
+        <div>
+            <ul id='output' class='dialogue'></ul>
+        </div>
+    </div>
+    <!--/ コンテンツ表示画面 -->
+
+
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- JQuery -->
+    
+    <!-- kuromoji -->
+    <script src='./kuromoji.js'></script>
+    <!--/ kuromoji -->
+
+
+    <!--** 以下Firebase **-->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved }     // TODO: Add SDKs for Firebase products that you want to use
+            from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmRFYJp-TjmjRilxp6v2ln0BnCvUkrMbE",
+            authDomain: "chat-732f9.firebaseapp.com",
+            projectId: "chat-732f9",
+            storageBucket: "chat-732f9.appspot.com",
+            messagingSenderId: "1099187242727",
+            appId: "1:1099187242727:web:70de0784cba251b35d8442"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app); // データベースへの接続
+        const dbRef = ref(db, 'chat'); // どのデータベースを参照するか
+
+        $('#send').on('click', (e) => {
+            console.log(e);
+            shapeHTML();
+        });
+
+        // 改行した時に書き込む場合のイベント
+        // $("#text").on("keydown", (e) => {
+        //     if (e.keyCode === 13) {
+        //         shapeHTML();
+        //     }
+        // });
+
+        let shapeHTML = () => {
+            const date = new Date();
+            const msg = {
+                uname: $('#uname').val(),
+                text: $('#text').val(),
+                colorname: $('#uname').css("background-color")
+            }
+            const newPostRef = push(dbRef); // データをユニークなものにするための記述
+            set(newPostRef, msg) // データを保存
+            // $('#uname').val(null);
+            $('#text').val(String.fromCharCode(8));
+            $('#text').focus();
+        // };
+
+        // onChildAdded(dbRef, function (data) {
+            // const msg = data.val();
+            const key = newPostRef.key;
+            let h = `<li id='${newPostRef.key}' class='dialogue'>`;
+            h += msg.uname;
+            // h += msg.wtime;
+            h += ' wrote;<br>「';
+            h += msg.text;
+            h += '」</li>';
+            $("#output").prepend(h); //#outputの先頭に追加
+        }
+
+        onChildRemoved(dbRef, function (data) {
+            const key = data.key;
+            $(`#${key}`).slideUp(200);
+            // location.reload(); // リロードする場合の書き方
+        })
+
+        $('#output').on('click', function (e) {
+            console.log(e);
+            const thisID = e.target.id;
+            const deletePostRef = $('li').attr('id');
+            remove(ref(db, `chat/${thisID}`));
+        })
+
+        $('#uname').on('change', () => {
+            const colornum = Math.floor(Math.random() * 4096).toString(16);
+            $('#uname').css("background-color",`#${colornum}`);
+            
+        })
+
+        $('#tweet').on('click', (e) => {
+            const r = Math.floor(Math.random()*1600);
+            console.log(r);
+            const key = localStorage.key(r);
+            const value = localStorage.getItem(key);
+
+            console.log(value);
+            $('#text').val(value);
+        });
+ 
+    </script>
+
+
+
+</body>
+
+</html>
